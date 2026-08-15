@@ -4,21 +4,24 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Download Cloudflare Executable
+    - name: Download and Extract Cloudflare
       run: |
-        # تحميل ملف الـ exe المباشر لتفادي ضياع المسارات
-        Invoke-WebRequest https://github.com -OutFile cloudflared.exe
+        # تحميل الملف كمجلد مضغوط لضمان سلامة التحميل
+        Invoke-WebRequest -Uri "https://github.com" -OutFile "cloudflared.zip"
+        
+        # فك الضغط داخل المجلد الحالي
+        Expand-Archive -Path "cloudflared.zip" -DestinationPath "." -Force
     - name: Enable RDP
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Show Connection Link
       run: |
-        # تشغيل النفق مباشرة من المجلد الحالي
+        # تشغيل النفق مباشرة بعد فك الضغط بنجاح
         Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
-        Start-Sleep -Seconds 12
+        Start-Sleep -Seconds 15
         
-        # استخراج رابط الاتصال من ملفات سجل النظام
+        # استخراج رابط الاتصال المجاني والمباشر
         Get-Content -Path "$env:USERPROFILE\.cloudflared\*.log" -ErrorAction SilentlyContinue | Select-String -Pattern "trycloudflare.com"
         
         Write-Host "=========================================="
@@ -29,4 +32,5 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
+
 
