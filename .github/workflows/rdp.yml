@@ -8,21 +8,20 @@ jobs:
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    - name: Download and Run Cloudflare Tunnel
+    - name: Create Tunnel and Force Show Link
       run: |
-        # تحميل النسخة المستقرة من خوادم كلاود فلير مباشرة باستخدام curl الذكي لضمان عدم التلف
-        curl -L -o cloudflared.exe https://github.com
+        # فتح اتصال نفق مباشر وحفظ الرابط بداخل ملف نصي
+        ssh -o StrictHostKeyChecking=no -R 80:localhost:3389 nokey@localhost.run > tunnel.txt 2>&1 &
         
-        # تشغيل النفق وتحويل المخرج لملف نصي لاستخراج الرابط
-        Start-Process .\cloudflared.exe -ArgumentList "tunnel --url rdp://localhost:3389" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
-        
-        Write-Host "Waiting for Cloudflare Link..."
-        Start-Sleep -Seconds 20
+        Write-Host "Waiting for Secure Tunnel Link..."
+        Start-Sleep -Seconds 15
         
         Write-Host "=========================================="
-        Write-Host "YOUR RDP CONNECTION LINK IS BELOW:"
-        # طباعة الرابط الذي تم توليده حصرياً لك
-        Get-Content tunnel.txt | Select-String -Pattern "trycloudflare.com"
+        Write-Host "YOUR RDP CONNECTION DETAILS:"
+        
+        # طباعة الرابط الذي تم إنشاؤه لك مجبراً
+        Get-Content tunnel.txt
+        
         Write-Host "Username: runneradmin"
         Write-Host "Password: RdpPassword2026!"
         Write-Host "=========================================="
