@@ -6,20 +6,21 @@ jobs:
     steps:
     - name: Enable RDP
       run: |
+        # تفعيل خيارات الـ RDP داخل سيرفر ويندوز
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Force Show Link
       run: |
-        # فتح اتصال نفق مباشر وحفظ الرابط بداخل ملف نصي
-        ssh -o StrictHostKeyChecking=no -R 80:localhost:3389 nokey@localhost.run > tunnel.txt 2>&1 &
+        # فتح نفق TCP نقي وعشوائي ليتوافق مع برنامج الـ RDP تماماً
+        ssh -o StrictHostKeyChecking=no -R 0:localhost:3389 serveo.net > tunnel.txt 2>&1 &
         
-        Write-Host "Waiting for Secure Tunnel Link..."
-        Start-Sleep -Seconds 15
+        Write-Host "Waiting for Secure TCP Link..."
+        Start-Sleep -Seconds 20
         
         Write-Host "=========================================="
         Write-Host "YOUR RDP CONNECTION DETAILS:"
         
-        # طباعة الرابط الذي تم إنشاؤه لك مجبراً
+        # طباعة الرابط والمنفذ المخصص لك
         Get-Content tunnel.txt
         
         Write-Host "Username: runneradmin"
@@ -29,4 +30,3 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
-
