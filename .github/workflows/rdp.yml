@@ -4,24 +4,21 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Download and Extract Cloudflare
+    - name: Install Cloudflare via Winget
       run: |
-        # تحميل الملف كمجلد مضغوط
-        Invoke-WebRequest -Uri "https://github.com" -OutFile "cloudflared.zip"
-        
-        # فك الضغط باستخدام أداة النظام المباشرة tar لتفادي خطأ PowerShell
-        tar -xf cloudflared.zip
+        # التثبيت المباشر والآمن عبر مدير حزم ويندوز الرسمي لجيتهاب
+        winget install --id Cloudflare.cloudflared --silent --accept-source-agreements --accept-package-agreements
     - name: Enable RDP
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Show Connection Link
       run: |
-        # تشغيل النفق مباشرة بعد فك الضغط بنجاح
-        Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
+        # تشغيل النفق بعد التثبيت في مسار النظام الصحيح
+        Start-Process -FilePath "C:\Program Files\cloudflared\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
         Start-Sleep -Seconds 15
         
-        # استخراج رابط الاتصال المجاني والمباشر
+        # استخراج رابط الاتصال المجاني والمباشر لمشاركة الإنترنت
         Get-Content -Path "$env:USERPROFILE\.cloudflared\*.log" -ErrorAction SilentlyContinue | Select-String -Pattern "trycloudflare.com"
         
         Write-Host "=========================================="
@@ -32,6 +29,7 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
+
 
 
 
