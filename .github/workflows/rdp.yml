@@ -6,11 +6,11 @@ jobs:
     steps:
     - name: Download and Extract Cloudflare
       run: |
-        # تحميل الملف كمجلد مضغوط لضمان سلامة التحميل
+        # تحميل الملف كمجلد مضغوط
         Invoke-WebRequest -Uri "https://github.com" -OutFile "cloudflared.zip"
         
-        # فك الضغط داخل المجلد الحالي
-        Expand-Archive -Path "cloudflared.zip" -DestinationPath "." -Force
+        # فك الضغط باستخدام أداة النظام المباشرة tar لتفادي خطأ PowerShell
+        tar -xf cloudflared.zip
     - name: Enable RDP
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
@@ -32,5 +32,6 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
+
 
 
