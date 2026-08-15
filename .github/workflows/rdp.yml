@@ -10,16 +10,16 @@ jobs:
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Force Show Link
       run: |
-        # تشغيل الاتصال وحفظ المخرج في ملف نصي لإظهار الرابط مجبراً
-        Start-Process ssh -ArgumentList "-R 80:localhost:3389 nokey@localhost.run" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
+        # تشغيل الاتصال عبر خدمة Serveo المضمونة وطباعة الرابط فوراً
+        Start-Process ssh -ArgumentList "-o StrictHostKeyChecking=no -R 80:localhost:3389 serveo.net" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
         
-        Write-Host "Waiting for link generation..."
+        Write-Host "Waiting for Serveo link..."
         Start-Sleep -Seconds 15
         
         Write-Host "=========================================="
         Write-Host "YOUR RDP CONNECTION LINK IS BELOW:"
-        # طباعة محتوى الملف الذي يحتوي على الرابط
-        Get-Content tunnel.txt | Select-String -Pattern "localhost.run"
+        # طباعة المحتوى بالكامل لرؤية الرابط مجبراً
+        Get-Content tunnel.txt
         Write-Host "Username: runneradmin"
         Write-Host "Password: RdpPassword2026!"
         Write-Host "=========================================="
@@ -27,7 +27,6 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
-
 
 
 
