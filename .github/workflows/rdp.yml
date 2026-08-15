@@ -10,21 +10,23 @@ jobs:
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Force Show Link
       run: |
-        # فتح نفق TCP مباشر بدلاً من HTTP لتوافق برنامج الـ RDP
-        Start-Process ssh -ArgumentList "-o StrictHostKeyChecking=no -R 0:localhost:3389 serveo.net" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
+        # استخدام منفذ ثابت ومحدد وهو 12345 بدلاً من 0 لتفادي رفض السيرفر
+        Start-Process ssh -ArgumentList "-o StrictHostKeyChecking=no -R 12345:localhost:3389 serveo.net" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
         
         Write-Host "Waiting for Serveo TCP link..."
         Start-Sleep -Seconds 15
         
         Write-Host "=========================================="
         Write-Host "YOUR RDP CONNECTION LINK IS BELOW:"
-        Get-Content tunnel.txt
+        Write-Host "Computer Address: serveo.net:12345"
         Write-Host "Username: runneradmin"
         Write-Host "Password: RdpPassword2026!"
         Write-Host "=========================================="
     - name: Keep RDP Alive
       run: |
         $seconds = 21600
+        while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
+
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
 
 
