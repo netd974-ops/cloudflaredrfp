@@ -6,17 +6,20 @@ jobs:
     steps:
     - name: Enable RDP
       run: |
-        # تفعيل الـ RDP داخل الويندوز والسماح بمرور الاتصال
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    - name: Create Tunnel via SSH LocalhostRun
+    - name: Create Tunnel and Force Show Link
       run: |
-        # تشغيل اتصال نفق سريع ومباشر باستخدام أداة SSH المدمجة في الويندوز أساساً
-        Start-Process ssh -ArgumentList "-R 80:localhost:3389 nokey@localhost.run" -NoNewWindow
-        Start-Sleep -Seconds 10
+        # تشغيل الاتصال وحفظ المخرج في ملف نصي لإظهار الرابط مجبراً
+        Start-Process ssh -ArgumentList "-R 80:localhost:3389 nokey@localhost.run" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
+        
+        Write-Host "Waiting for link generation..."
+        Start-Sleep -Seconds 15
         
         Write-Host "=========================================="
-        Write-Host "للاتصال بالـ RDP: استخدم الرابط المكتوب في السجل بالأسفل"
+        Write-Host "YOUR RDP CONNECTION LINK IS BELOW:"
+        # طباعة محتوى الملف الذي يحتوي على الرابط
+        Get-Content tunnel.txt | Select-String -Pattern "localhost.run"
         Write-Host "Username: runneradmin"
         Write-Host "Password: RdpPassword2026!"
         Write-Host "=========================================="
