@@ -4,22 +4,29 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Download Cloudflare
+    - name: Download Cloudflare Executable
       run: |
-        Invoke-WebRequest https://github.com -OutFile cloudflared.msi
-        Start-Process msiexec.exe -ArgumentList '/i cloudflared.msi /qn' -Wait
+        # تحميل ملف الـ exe المباشر لتفادي ضياع المسارات
+        Invoke-WebRequest https://github.com -OutFile cloudflared.exe
     - name: Enable RDP
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Show Connection Link
       run: |
-        Start-Process -FilePath "C:\Program Files\cloudflared\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
-        Start-Sleep -Seconds 10
+        # تشغيل النفق مباشرة من المجلد الحالي
+        Start-Process -FilePath ".\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
+        Start-Sleep -Seconds 12
+        
+        # استخراج رابط الاتصال من ملفات سجل النظام
         Get-Content -Path "$env:USERPROFILE\.cloudflared\*.log" -ErrorAction SilentlyContinue | Select-String -Pattern "trycloudflare.com"
+        
+        Write-Host "=========================================="
         Write-Host "Username: runneradmin"
         Write-Host "Password: RdpPassword2026!"
+        Write-Host "=========================================="
     - name: Keep RDP Alive
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
+
