@@ -4,21 +4,25 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - name: Install Cloudflare via Winget
+    - name: Download Cloudflare Direct Executable
       run: |
-        # التثبيت المباشر والآمن عبر مدير حزم ويندوز الرسمي لجيتهاب
-        winget install --id Cloudflare.cloudflared --silent --accept-source-agreements --accept-package-agreements
+        # إنشاء مجلد ثابت لمنع اختفاء الملف
+        mkdir C:\Cloudflared
+        
+        # تحميل الملف التنفيذي المباشر داخل المجلد الجديد
+        Invoke-WebRequest -Uri "https://github.com" -OutFile "C:\Cloudflared\cloudflared.exe"
     - name: Enable RDP
       run: |
+        # تفعيل منفذ الـ RDP داخل الويندوز
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - name: Create Tunnel and Show Connection Link
       run: |
-        # تشغيل النفق بعد التثبيت في مسار النظام الصحيح
-        Start-Process -FilePath "C:\Program Files\cloudflared\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
+        # تشغيل النفق من المسار الثابت الذي قمنا بإنشائه
+        Start-Process -FilePath "C:\Cloudflared\cloudflared.exe" -ArgumentList "tunnel --url rdp://localhost:3389" -NoNewWindow
         Start-Sleep -Seconds 15
         
-        # استخراج رابط الاتصال المجاني والمباشر لمشاركة الإنترنت
+        # استخراج رابط الاتصال المجاني لمشاركة الإنترنت
         Get-Content -Path "$env:USERPROFILE\.cloudflared\*.log" -ErrorAction SilentlyContinue | Select-String -Pattern "trycloudflare.com"
         
         Write-Host "=========================================="
@@ -29,6 +33,7 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
+
 
 
 
