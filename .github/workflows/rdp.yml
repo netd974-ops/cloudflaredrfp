@@ -8,17 +8,21 @@ jobs:
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    - name: Create Tunnel and Force Show Link
+    - name: Download and Run Cloudflare Tunnel
       run: |
-        # استخدام منفذ ثابت ومحدد وهو 12345 بدلاً من 0 لتفادي رفض السيرفر
-        Start-Process ssh -ArgumentList "-o StrictHostKeyChecking=no -R 12345:localhost:3389 serveo.net" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
+        # تحميل النسخة المستقرة من خوادم كلاود فلير مباشرة باستخدام curl الذكي لضمان عدم التلف
+        curl -L -o cloudflared.exe https://github.com
         
-        Write-Host "Waiting for Serveo TCP link..."
-        Start-Sleep -Seconds 15
+        # تشغيل النفق وتحويل المخرج لملف نصي لاستخراج الرابط
+        Start-Process .\cloudflared.exe -ArgumentList "tunnel --url rdp://localhost:3389" -RedirectStandardOutput "tunnel.txt" -NoNewWindow
+        
+        Write-Host "Waiting for Cloudflare Link..."
+        Start-Sleep -Seconds 20
         
         Write-Host "=========================================="
         Write-Host "YOUR RDP CONNECTION LINK IS BELOW:"
-        Write-Host "Computer Address: serveo.net:12345"
+        # طباعة الرابط الذي تم توليده حصرياً لك
+        Get-Content tunnel.txt | Select-String -Pattern "trycloudflare.com"
         Write-Host "Username: runneradmin"
         Write-Host "Password: RdpPassword2026!"
         Write-Host "=========================================="
@@ -26,8 +30,4 @@ jobs:
       run: |
         $seconds = 21600
         while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
-
-        while ($seconds -gt 0) { Start-Sleep -Seconds 60; $seconds -= 60 }
-
-
 
